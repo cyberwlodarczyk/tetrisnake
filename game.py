@@ -1,16 +1,18 @@
-from settings import *
-from random import choice
-
+from sys import exit
 from timer import Timer
+from settings import *
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, get_next_shape, update_score):
         # General
         self.surface = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
         self.display_surface = pygame.display.get_surface()
         self.rect = self.surface.get_rect(topleft=(PADDING, PADDING))
         self.sprites = pygame.sprite.Group()
+
+        self.get_next_shape = get_next_shape
+        self.update_score = update_score
 
         # Lines
         self.line_surface = self.surface.copy()
@@ -18,23 +20,50 @@ class Game:
         self.line_surface.set_colorkey((0, 255, 0))
         self.line_surface.set_alpha(120)
 
+        self.current_level = 1
+        self.current_score = 0
+        self.current_lines = 0
+
         # Tetromino
-        self.field_data = [[0 for _ in range(COLUMNS)] for _ in range(ROWS)] * ROWS
+        self.field_data = [[0 for _ in range(COLUMNS)] for _ in range(ROWS)]
+        self.tetromino = None
         self.create_new_tetromino()
 
-        # Timer
+        # Timers
+        self.down_speed = UPDATE_START_SPEED
+        self.down_speed_faster = self.down_speed * 0.3
+        self.down_pressed = False
         self.timers = {
-            "vertical move": Timer(UPDATE_START_SPEED, True, self.move_down),
+            "vertical move": Timer(self.down_speed, True, self.move_down),
             "horizontal move": Timer(MOVE_WAIT_TIME),
             "rotate": Timer(ROTATE_WAIT_TIME),
         }
         for timer in self.timers.values():
             timer.activate()
 
+    def calculate_score(self, num_lines):
+        self.current_lines += num_lines
+        self.current_score += SCORE_DATA[num_lines] * self.current_level
+
+        if self.current_lines / 10 > self.current_level:
+            self.current_level += 1
+            self.down_speed *= 0.75
+            self.down_speed_faster = self.down_speed * 0.3
+            self.timers["vertical move"].duration = self.down_speed
+
+        self.update_score(self.current_lines, self.current_score, self.current_level)
+
+    def check_game_over(self):
+        if self.tetromino:
+            for block in self.tetromino.blocks:
+                if block.pos.y < 0:
+                    exit()
+
     def create_new_tetromino(self):
+        self.check_game_over()
         self.check_finished_rows()
         self.tetromino = Tetromino(
-            choice(list(TETROMINOS.keys())),
+            self.get_next_shape(),
             self.sprites,
             self.create_new_tetromino,
             self.field_data,
@@ -86,6 +115,14 @@ class Game:
                 self.tetromino.rotate()
                 self.timers["rotate"].activate()
 
+        if not self.down_pressed and keys[pygame.K_DOWN]:
+            self.down_pressed = True
+            self.timers["vertical move"].duration = self.down_speed_faster
+
+        if self.down_pressed and not keys[pygame.K_DOWN]:
+            self.down_pressed = False
+            self.timers["vertical move"].duration = self.down_speed
+
     def check_finished_rows(self):
         delete_rows = [i for i, row in enumerate(self.field_data) if all(row)]
         if delete_rows:
@@ -96,9 +133,10 @@ class Game:
                     for block in row:
                         if block and block.pos.y < delete_row:
                             block.pos.y += 1
-            self.field_data = [[0 for _ in range(COLUMNS)] for _ in range(ROWS)] * ROWS
+            self.field_data = [[0 for _ in range(COLUMNS)] for _ in range(ROWS)]
             for block in self.sprites:
                 self.field_data[int(block.pos.y)][int(block.pos.x)] = block
+            self.calculate_score(len(delete_rows))
 
     def run(self):
         self.input()
