@@ -2,22 +2,23 @@ from settings import *
 from pygame.image import load
 from os import path
 
+from panel import Panel
 
-class Preview:
+
+class Preview(Panel):
     def __init__(self):
-        self.surface = pygame.Surface(
-            (SIDEBAR_WIDTH, GAME_HEIGHT * PREVIEW_HEIGHT_FRACTION)
+        super().__init__(
+            (SIDEBAR_WIDTH, GAME_HEIGHT * PREVIEW_HEIGHT_FRACTION),
+            topright=((WINDOW_WIDTH - PADDING, PADDING)),
         )
-        self.rect = self.surface.get_rect(topright=((WINDOW_WIDTH - PADDING, PADDING)))
-        self.display_surface = pygame.display.get_surface()
         self.shape_surfaces = {
             shape: load(path.join("assets", f"{shape}.png")).convert_alpha()
             for shape in TETROMINOS.keys()
         }
         self.increment_height = self.surface.get_height() / 3
 
-    def display_pieces(self, shapes):
-        for i, shape in enumerate(shapes):
+    def draw_shapes(self, data):
+        for i, shape in enumerate(data):
             shape_surface = self.shape_surfaces[shape]
             x = self.surface.get_width() // 2
             y = self.increment_height / 2 + i * self.increment_height
@@ -26,8 +27,8 @@ class Preview:
                 shape_surface.get_rect(center=(x, y)),
             )
 
-    def run(self, next_shapes):
-        self.surface.fill(GRAY)
-        self.display_pieces(next_shapes)
-        self.display_surface.blit(self.surface, self.rect)
-        pygame.draw.rect(self.display_surface, LINE_COLOR, self.rect, 2, 2)
+    def draw(self, shapes):
+        super().draw_background()
+        self.draw_shapes(shapes)
+        super().draw()
+        super().draw_border()

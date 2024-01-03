@@ -1,25 +1,22 @@
-from settings import *
-from sys import exit
 from random import choice
-
-# Components
+from sys import exit
 from game import Game
 from preview import Preview
 from score import Score
+from settings import *
+
+
+def random_shape():
+    return choice(list(TETROMINOS.keys()))
 
 
 class Main:
     def __init__(self):
-        # General
         pygame.init()
+        pygame.display.set_caption("Tetris")
         self.display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         self.clock = pygame.time.Clock()
-        pygame.display.set_caption("Tetris")
-
-        # Shapes
-        self.next_shapes = [choice(list(TETROMINOS.keys())) for _ in range(3)]
-
-        # Components
+        self.next_shapes = [random_shape() for _ in range(3)]
         self.game = Game(self.get_next_shape, self.update_score)
         self.preview = Preview()
         self.score = Score()
@@ -30,9 +27,8 @@ class Main:
         self.score.level = level
 
     def get_next_shape(self):
-        next_shape = self.next_shapes.pop(0)
-        self.next_shapes.append(choice(list(TETROMINOS.keys())))
-        return next_shape
+        self.next_shapes.append(random_shape())
+        return self.next_shapes.pop(0)
 
     def run(self):
         while True:
@@ -40,20 +36,13 @@ class Main:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
-
-            # Display
-            self.display_surface.fill(GRAY)
-
-            # Components
+            self.display_surface.fill(BACKGROUND_COLOR)
             self.game.run()
-            self.preview.run(self.next_shapes)
-            self.score.run()
-
-            # Updating the game
+            self.preview.draw(self.next_shapes)
+            self.score.draw()
             pygame.display.update()
             self.clock.tick()
 
 
 if __name__ == "__main__":
-    main = Main()
-    main.run()
+    Main().run()
