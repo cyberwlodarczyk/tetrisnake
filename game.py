@@ -1,4 +1,5 @@
 from sys import exit
+from grid import Grid
 from timer import Timer
 from settings import *
 
@@ -7,33 +8,30 @@ from panel import Panel
 
 class Game(Panel):
     def __init__(self, get_next_shape, update_score):
-        super().__init__((GAME_WIDTH, GAME_HEIGHT), topleft=(PADDING, PADDING))
+        super().__init__((TETRIS_WIDTH, TETRIS_HEIGHT), topleft=(PADDING, PADDING))
         self.sprites = pygame.sprite.Group()
 
         self.get_next_shape = get_next_shape
         self.update_score = update_score
 
-        self.line_surface = self.surface.copy()
-        self.line_surface.fill((0, 255, 0))
-        self.line_surface.set_colorkey((0, 255, 0))
-        self.line_surface.set_alpha(120)
+        self.grid = Grid(self.surface, TETRIS_ROWS, TETRIS_COLS)
 
         self.current_level = 1
         self.current_score = 0
         self.current_lines = 0
 
-        self.cells = [[0 for _ in range(COLUMNS)] for _ in range(ROWS)]
+        self.cells = [[0 for _ in range(TETRIS_COLS)] for _ in range(TETRIS_ROWS)]
         self.tetromino = None
         self.create_tetromino()
 
-        self.down_speed = UPDATE_START_SPEED
+        self.down_speed = TETRIS_UPDATE_START_SPEED
         self.down_speed_faster = self.down_speed * 0.3
         self.down_pressed = False
 
         self.timers = {
             "vertical move": Timer(self.down_speed, True, self.move_down),
-            "horizontal move": Timer(MOVE_WAIT_TIME),
-            "rotate": Timer(ROTATE_WAIT_TIME),
+            "horizontal move": Timer(TETRIS_MOVE_WAIT_TIME),
+            "rotate": Timer(TETRIS_ROTATE_WAIT_TIME),
         }
         for timer in self.timers.values():
             timer.activate()
@@ -66,7 +64,7 @@ class Game(Panel):
                     for block in row:
                         if block and block.pos.y < delete_row:
                             block.pos.y += 1
-            self.cells = [[0 for _ in range(COLUMNS)] for _ in range(ROWS)]
+            self.cells = [[0 for _ in range(TETRIS_COLS)] for _ in range(TETRIS_ROWS)]
             for block in self.sprites:
                 self.cells[int(block.pos.y)][int(block.pos.x)] = block
             self.calculate_score(len(delete_rows))
@@ -112,31 +110,10 @@ class Game(Panel):
             self.down_pressed = False
             self.timers["vertical move"].duration = self.down_speed
 
-    def draw_grid(self):
-        for col in range(1, COLUMNS):
-            x = col * CELL_SIZE
-            pygame.draw.line(
-                self.line_surface,
-                GRID_COLOR,
-                (x, 0),
-                (x, self.surface.get_height()),
-                1,
-            )
-        for row in range(1, ROWS):
-            y = row * CELL_SIZE
-            pygame.draw.line(
-                self.line_surface,
-                GRID_COLOR,
-                (0, y),
-                (self.surface.get_width(), y),
-                1,
-            )
-        self.surface.blit(self.line_surface, (0, 0))
-
     def draw(self):
         super().draw_background()
         self.sprites.draw(self.surface)
-        self.draw_grid()
+        self.grid.draw()
         super().draw()
         super().draw_border()
 
@@ -184,9 +161,9 @@ class Tetromino:
         pivot_pos = self.blocks[0].pos
         new_pos = [block.rotate(pivot_pos) for block in self.blocks]
         for pos in new_pos:
-            if not 0 <= pos.x < COLUMNS:
+            if not 0 <= pos.x < TETRIS_COLS:
                 return
-            if not pos.y < ROWS:
+            if not pos.y < TETRIS_ROWS:
                 return
             if self.cells[int(pos.y)][int(pos.x)]:
                 return
@@ -200,17 +177,17 @@ class Block(pygame.sprite.Sprite):
         self.cells = cells
         self.image = pygame.Surface((CELL_SIZE, CELL_SIZE))
         self.image.fill(color)
-        self.pos = pygame.Vector2(pos) + BLOCK_OFFSET
+        self.pos = pygame.Vector2(pos) + TETRIS_BLOCK_OFFSET
         self.rect = self.image.get_rect(topleft=self.pos * CELL_SIZE)
 
     def is_horizontal_collision(self, x):
-        if not 0 <= x < COLUMNS:
+        if not 0 <= x < TETRIS_COLS:
             return True
         if self.cells[int(self.pos.y)][x]:
             return True
 
     def is_vertical_collision(self, y):
-        if not y < ROWS:
+        if not y < TETRIS_ROWS:
             return True
         if self.cells[y][int(self.pos.x)] and y >= 0:
             return True

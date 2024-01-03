@@ -7,8 +7,8 @@ from panel import Panel
 class Score(Panel):
     def __init__(self):
         super().__init__(
-            (SIDEBAR_WIDTH, GAME_HEIGHT * SCORE_HEIGHT_FRACTION - PADDING),
-            bottomright=(WINDOW_WIDTH - PADDING, WINDOW_HEIGHT - PADDING),
+            (SIDEBAR_WIDTH, TETRIS_HEIGHT * SCORE_HEIGHT_FRACTION - PADDING),
+            bottomleft=(TETRIS_WIDTH + PADDING * 2, WINDOW_HEIGHT - PADDING),
         )
         self.font = pygame.font.Font(path.join("assets", "Russo_One.ttf"), 30)
         self.increment_height = self.surface.get_height() / 3

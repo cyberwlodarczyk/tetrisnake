@@ -3,6 +3,7 @@ from sys import exit
 from game import Game
 from preview import Preview
 from score import Score
+from snake import Snake
 from settings import *
 
 
@@ -20,6 +21,7 @@ class Main:
         self.game = Game(self.get_next_shape, self.update_score)
         self.preview = Preview()
         self.score = Score()
+        self.snake = Snake()
 
     def update_score(self, lines, score, level):
         self.score.lines = lines
@@ -40,6 +42,7 @@ class Main:
             self.game.run()
             self.preview.draw(self.next_shapes)
             self.score.draw()
+            self.snake.draw()
             pygame.display.update()
             self.clock.tick()
 

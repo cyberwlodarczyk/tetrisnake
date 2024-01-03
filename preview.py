@@ -8,8 +8,8 @@ from panel import Panel
 class Preview(Panel):
     def __init__(self):
         super().__init__(
-            (SIDEBAR_WIDTH, GAME_HEIGHT * PREVIEW_HEIGHT_FRACTION),
-            topright=((WINDOW_WIDTH - PADDING, PADDING)),
+            (SIDEBAR_WIDTH, TETRIS_HEIGHT * PREVIEW_HEIGHT_FRACTION),
+            topleft=((TETRIS_WIDTH + PADDING * 2, PADDING)),
         )
         self.shape_surfaces = {
             shape: load(path.join("assets", f"{shape}.png")).convert_alpha()
