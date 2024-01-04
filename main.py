@@ -42,7 +42,7 @@ class Main:
             self.game.run()
             self.preview.draw(self.next_shapes)
             self.score.draw()
-            self.snake.draw()
+            self.snake.run()
             pygame.display.update()
             self.clock.tick()
 

@@ -52,6 +52,7 @@ class Game(Panel):
         if self.tetromino:
             for block in self.tetromino.blocks:
                 if block.pos.y < 0:
+                    pygame.quit()
                     exit()
 
     def check_finished_rows(self):

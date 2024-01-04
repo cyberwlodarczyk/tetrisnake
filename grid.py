@@ -19,7 +19,7 @@ class Grid:
                 GRID_COLOR,
                 (x, 0),
                 (x, self.surface.get_height()),
-                1,
+                GRID_WIDTH,
             )
         for row in range(1, self.rows):
             y = row * CELL_SIZE
@@ -28,6 +28,6 @@ class Grid:
                 GRID_COLOR,
                 (0, y),
                 (self.surface.get_width(), y),
-                1,
+                GRID_WIDTH,
             )
         self.display_surface.blit(self.surface, (0, 0))
