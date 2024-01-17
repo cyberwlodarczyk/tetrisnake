@@ -1,59 +1,38 @@
-from sys import exit
-from grid import Grid
-from timer import Timer
+import sys
+from shared import Grid, Panel, Timer
+from sidebar import Shapes, Stats
 from settings import *
 
-from panel import Panel
 
-
-class Game(Panel):
-    def __init__(self, get_next_shape, update_score):
+class Tetris(Panel):
+    def __init__(self, stats: Stats, shapes: Shapes):
         super().__init__((TETRIS_WIDTH, TETRIS_HEIGHT), topleft=(PADDING, PADDING))
         self.sprites = pygame.sprite.Group()
-
-        self.get_next_shape = get_next_shape
-        self.update_score = update_score
-
+        self.stats = stats
+        self.shapes = shapes
         self.grid = Grid(self.surface, TETRIS_ROWS, TETRIS_COLS)
-
-        self.current_level = 1
         self.current_score = 0
         self.current_lines = 0
-
         self.cells = [[0 for _ in range(TETRIS_COLS)] for _ in range(TETRIS_ROWS)]
         self.tetromino = None
         self.create_tetromino()
-
-        self.down_speed = TETRIS_UPDATE_START_SPEED
+        self.down_speed = TETRIS_UPDATE_SPEED
         self.down_speed_faster = self.down_speed * 0.3
         self.down_pressed = False
-
         self.timers = {
             "vertical move": Timer(self.down_speed, True, self.move_down),
             "horizontal move": Timer(TETRIS_MOVE_WAIT_TIME),
             "rotate": Timer(TETRIS_ROTATE_WAIT_TIME),
         }
         for timer in self.timers.values():
-            timer.activate()
-
-    def calculate_score(self, num_lines):
-        self.current_lines += num_lines
-        self.current_score += SCORE_DATA[num_lines] * self.current_level
-
-        if self.current_lines / 10 > self.current_level:
-            self.current_level += 1
-            self.down_speed *= 0.75
-            self.down_speed_faster = self.down_speed * 0.3
-            self.timers["vertical move"].duration = self.down_speed
-
-        self.update_score(self.current_lines, self.current_score, self.current_level)
+            timer.start()
 
     def check_game_over(self):
         if self.tetromino:
             for block in self.tetromino.blocks:
                 if block.pos.y < 0:
                     pygame.quit()
-                    exit()
+                    sys.exit()
 
     def check_finished_rows(self):
         delete_rows = [i for i, row in enumerate(self.cells) if all(row)]
@@ -68,7 +47,7 @@ class Game(Panel):
             self.cells = [[0 for _ in range(TETRIS_COLS)] for _ in range(TETRIS_ROWS)]
             for block in self.sprites:
                 self.cells[int(block.pos.y)][int(block.pos.x)] = block
-            self.calculate_score(len(delete_rows))
+            self.stats.increment_lines(len(delete_rows))
 
     def create_tetromino(self):
         self.check_game_over()
@@ -76,7 +55,7 @@ class Game(Panel):
         self.tetromino = Tetromino(
             self.sprites,
             self.cells,
-            self.get_next_shape(),
+            self.shapes.get_next(),
         )
 
     def update_timer(self):
@@ -89,25 +68,21 @@ class Game(Panel):
 
     def get_input(self):
         keys = pygame.key.get_pressed()
-
-        if not self.timers["horizontal move"].active:
-            if keys[pygame.K_LEFT]:
+        if not self.timers["horizontal move"].is_running:
+            if keys[pygame.K_a]:
                 self.tetromino.move_horizontal(-1)
-                self.timers["horizontal move"].activate()
-            if keys[pygame.K_RIGHT]:
+                self.timers["horizontal move"].start()
+            if keys[pygame.K_d]:
                 self.tetromino.move_horizontal(1)
-                self.timers["horizontal move"].activate()
-
-        if not self.timers["rotate"].active:
-            if keys[pygame.K_UP]:
+                self.timers["horizontal move"].start()
+        if not self.timers["rotate"].is_running:
+            if keys[pygame.K_w]:
                 self.tetromino.rotate()
-                self.timers["rotate"].activate()
-
-        if not self.down_pressed and keys[pygame.K_DOWN]:
+                self.timers["rotate"].start()
+        if not self.down_pressed and keys[pygame.K_s]:
             self.down_pressed = True
             self.timers["vertical move"].duration = self.down_speed_faster
-
-        if self.down_pressed and not keys[pygame.K_DOWN]:
+        if self.down_pressed and not keys[pygame.K_s]:
             self.down_pressed = False
             self.timers["vertical move"].duration = self.down_speed
 

@@ -1,24 +1,26 @@
-from sys import exit
-from random import randint
-from grid import Grid
-from panel import Panel
-from timer import Timer
+import sys
+import random
+from shared import Grid, Panel, Timer
+from sidebar import Stats
 from settings import *
 
 
 def random_pos():
     return (
-        pygame.Vector2(randint(0, SNAKE_COLS - 1), randint(0, SNAKE_ROWS - 1))
+        pygame.Vector2(
+            random.randint(0, SNAKE_COLS - 1), random.randint(0, SNAKE_ROWS - 1)
+        )
         * CELL_SIZE
     )
 
 
 class Snake(Panel):
-    def __init__(self):
+    def __init__(self, stats: Stats):
         super().__init__(
             (SNAKE_WIDTH, SNAKE_HEIGHT),
             topright=(WINDOW_WIDTH - PADDING, PADDING),
         )
+        self.stats = stats
         self.grid = Grid(self.surface, SNAKE_ROWS, SNAKE_COLS)
         self.body = [
             pygame.Vector2(SNAKE_START_COL - col, SNAKE_START_ROW) * CELL_SIZE
@@ -27,11 +29,11 @@ class Snake(Panel):
         self.direction = pygame.Vector2(1, 0)
         self.set_apple_pos()
         self.timer = Timer(
-            SNAKE_UPDATE_START_SPEED,
+            SNAKE_UPDATE_SPEED,
             True,
             self.update,
         )
-        self.timer.activate()
+        self.timer.start()
 
     def set_apple_pos(self):
         while True:
@@ -42,16 +44,16 @@ class Snake(Panel):
     def get_input(self):
         keys = pygame.key.get_pressed()
         x, y = 0, 0
-        if keys[pygame.K_w]:
+        if keys[pygame.K_UP]:
             if self.direction.y != 1:
                 x, y = 0, -1
-        if keys[pygame.K_d]:
+        if keys[pygame.K_RIGHT]:
             if self.direction.x != -1:
                 x, y = 1, 0
-        if keys[pygame.K_a]:
+        if keys[pygame.K_LEFT]:
             if self.direction.x != 1:
                 x, y = -1, 0
-        if keys[pygame.K_s]:
+        if keys[pygame.K_DOWN]:
             if self.direction.y != -1:
                 x, y = 0, 1
         if x != 0 or y != 0:
@@ -75,6 +77,7 @@ class Snake(Panel):
         if not self.body[0] == self.apple:
             self.body.pop()
         else:
+            self.stats.increment_apples()
             self.set_apple_pos()
         if (
             self.body[0] in self.body[1:]
@@ -82,7 +85,7 @@ class Snake(Panel):
             or not 0 <= self.body[0].y < SNAKE_HEIGHT
         ):
             pygame.quit()
-            exit()
+            sys.exit()
 
     def run(self):
         self.get_input()
