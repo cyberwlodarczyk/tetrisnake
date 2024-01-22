@@ -1,4 +1,3 @@
-import sys
 import random
 from shared import Grid, Panel, Timer
 from sidebar import Stats
@@ -21,19 +20,20 @@ class Snake(Panel):
             topright=(WINDOW_WIDTH - PADDING, PADDING),
         )
         self.stats = stats
+        self.is_running = True
         self.grid = Grid(self.surface, SNAKE_ROWS, SNAKE_COLS)
         self.body = [
             pygame.Vector2(SNAKE_START_COL - col, SNAKE_START_ROW) * CELL_SIZE
             for col in range(SNAKE_START_LENGTH)
         ]
         self.direction = pygame.Vector2(1, 0)
-        self.set_apple_pos()
         self.timer = Timer(
             SNAKE_UPDATE_SPEED,
             True,
             self.update,
         )
         self.timer.start()
+        self.set_apple_pos()
 
     def set_apple_pos(self):
         while True:
@@ -59,7 +59,7 @@ class Snake(Panel):
         if x != 0 or y != 0:
             self.direction = pygame.Vector2(x, y)
 
-    def draw_cell(self, point, color):
+    def draw_cell(self, point: pygame.Vector2, color: str):
         rect = pygame.Rect(point.x, point.y, CELL_SIZE, CELL_SIZE)
         pygame.draw.rect(self.surface, color, rect)
 
@@ -84,10 +84,11 @@ class Snake(Panel):
             or not 0 <= self.body[0].x < SNAKE_WIDTH
             or not 0 <= self.body[0].y < SNAKE_HEIGHT
         ):
-            pygame.quit()
-            sys.exit()
+            self.is_running = False
 
     def run(self):
+        if not self.is_running:
+            return
         self.get_input()
         self.timer.update()
         self.draw()
