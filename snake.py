@@ -20,7 +20,6 @@ class Snake(Panel):
             topright=(WINDOW_WIDTH - PADDING, PADDING),
         )
         self.stats = stats
-        self.is_running = True
         self.grid = Grid(self.surface, SNAKE_ROWS, SNAKE_COLS)
         self.body = [
             pygame.Vector2(SNAKE_START_COL - col, SNAKE_START_ROW) * CELL_SIZE
@@ -32,8 +31,16 @@ class Snake(Panel):
             True,
             self.update,
         )
-        self.timer.start()
         self.set_apple_pos()
+        self.stop()
+
+    def start(self):
+        self.is_running = True
+        self.timer.start()
+
+    def stop(self):
+        self.is_running = False
+        self.timer.stop()
 
     def set_apple_pos(self):
         while True:
@@ -84,11 +91,9 @@ class Snake(Panel):
             or not 0 <= self.body[0].x < SNAKE_WIDTH
             or not 0 <= self.body[0].y < SNAKE_HEIGHT
         ):
-            self.is_running = False
+            self.stop()
 
     def run(self):
-        if not self.is_running:
-            return
         self.get_input()
         self.timer.update()
         self.draw()

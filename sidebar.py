@@ -62,11 +62,6 @@ class Stats:
             ("Apples", self.apples),
         ]
 
-    def print(self):
-        print(f"{self.score} points scored")
-        print(f"{self.rows} tetris rows filled")
-        print(f"{self.apples} snake apples eaten")
-
     def increment_rows(self, count: int):
         self.score += count * TETRIS_ROW_POINTS
         self.rows += count

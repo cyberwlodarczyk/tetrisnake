@@ -1,4 +1,5 @@
 import sys
+from history import History
 from sidebar import Shapes, Preview, Stats, Score
 from tetris import Tetris
 from snake import Snake
@@ -11,6 +12,7 @@ class Main:
         pygame.display.set_caption(WINDOW_CAPTION)
         self.display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         self.clock = pygame.time.Clock()
+        self.history = History()
         self.shapes = Shapes()
         self.stats = Stats()
         self.tetris = Tetris(self.stats, self.shapes)
@@ -19,6 +21,9 @@ class Main:
         self.snake = Snake(self.stats)
 
     def run(self):
+        self.history.start()
+        self.tetris.start()
+        self.snake.start()
         while True:
             if not self.tetris.is_running or not self.snake.is_running:
                 self.exit()
@@ -37,8 +42,14 @@ class Main:
             self.clock.tick(FPS)
 
     def exit(self):
+        self.history.add(self.stats)
+        self.history.stop()
+        self.history.save()
+        if self.tetris.is_running:
+            self.tetris.stop()
+        if self.snake.is_running:
+            self.snake.stop()
         pygame.quit()
-        self.stats.print()
         sys.exit()
 
 

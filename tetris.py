@@ -94,18 +94,32 @@ class Tetris(Panel):
         self.shapes = shapes
         self.grid = Grid(self.surface, TETRIS_ROWS, TETRIS_COLS)
         self.tetromino = None
-        self.is_running = True
         self.is_down_pressed = False
+        self.timers = {
+            "vertical": Timer(TETRIS_UPDATE_SPEED, True, self.move_down),
+            "horizontal": Timer(TETRIS_MOVE_WAIT_TIME),
+            "rotational": Timer(TETRIS_ROTATE_WAIT_TIME),
+        }
         self.create_cells()
         self.create_tetromino()
-        self.create_timers()
+        self.stop()
+
+    def start(self):
+        self.is_running = True
+        for timer in self.timers.values():
+            timer.start()
+
+    def stop(self):
+        self.is_running = False
+        for timer in self.timers.values():
+            timer.stop()
 
     def check_game_over(self):
         if not self.tetromino:
             return
         for block in self.tetromino.blocks:
             if block.pos.y < 0:
-                self.is_running = False
+                self.stop()
 
     def check_filled_rows(self):
         if not self.tetromino:
@@ -135,19 +149,6 @@ class Tetris(Panel):
             self.cells,
             self.shapes.get_next(),
         )
-
-    def create_timers(self):
-        self.timers = {
-            "vertical": Timer(TETRIS_UPDATE_SPEED, True, self.move_down),
-            "horizontal": Timer(TETRIS_MOVE_WAIT_TIME),
-            "rotational": Timer(TETRIS_ROTATE_WAIT_TIME),
-        }
-        for timer in self.timers.values():
-            timer.start()
-
-    def update_timers(self):
-        for timer in self.timers.values():
-            timer.update()
 
     def get_input(self):
         keys = pygame.key.get_pressed()
@@ -181,9 +182,8 @@ class Tetris(Panel):
         super().draw_border()
 
     def run(self):
-        if not self.is_running:
-            return
         self.get_input()
-        self.update_timers()
+        for timer in self.timers.values():
+            timer.update()
         self.sprites.update()
         self.draw()
