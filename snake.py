@@ -96,4 +96,5 @@ class Snake(Panel):
     def run(self):
         self.get_input()
         self.timer.update()
-        self.draw()
+        if self.is_running:
+            self.draw()

@@ -186,4 +186,5 @@ class Tetris(Panel):
         for timer in self.timers.values():
             timer.update()
         self.sprites.update()
-        self.draw()
+        if self.is_running:
+            self.draw()

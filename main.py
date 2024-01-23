@@ -25,8 +25,6 @@ class Main:
         self.tetris.start()
         self.snake.start()
         while True:
-            if not self.tetris.is_running or not self.snake.is_running:
-                self.exit()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.exit()
@@ -35,10 +33,14 @@ class Main:
                 self.exit()
             self.display_surface.fill(BACKGROUND_COLOR)
             self.tetris.run()
+            if not self.tetris.is_running:
+                self.exit()
             self.preview.draw()
             self.score.draw()
             self.snake.run()
-            pygame.display.update()
+            if not self.snake.is_running:
+                self.exit()
+            pygame.display.flip()
             self.clock.tick(FPS)
 
     def exit(self):
@@ -49,6 +51,7 @@ class Main:
             self.tetris.stop()
         if self.snake.is_running:
             self.snake.stop()
+        pygame.time.delay(WINDOW_EXIT_DELAY)
         pygame.quit()
         sys.exit()
 
