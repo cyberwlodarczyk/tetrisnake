@@ -1,5 +1,7 @@
 # Tetrisnake 🐍
 
+![gameplay](images/gameplay.png)
+
 ## Introduction
 
 This is a simple PyGame project that combines two classic games at once: _Tetris_ and _Snake_.
