@@ -1,10 +1,10 @@
 # Tetrisnake 🐍
 
-![gameplay](images/gameplay.png)
-
 ## Introduction
 
-This is a simple PyGame project that combines two classic games at once: _Tetris_ and _Snake_.
+This is a simple PyGame project that combines two classic games at once: _Tetris_ and _Snake_. It is mainly based on tutorials that can be found on the [Net Ninja](https://www.youtube.com/@NetNinja) YouTube channel.
+
+![gameplay](images/gameplay.png)
 
 ## Installation
 
